@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -130,17 +131,18 @@ func ShouldEnableCommondDir(dir string) (bool, error) {
 		return false, err
 	}
 
-	// If the .git directory has a commondir, then enable option
-	dirEntries, err := os.ReadDir(gitDir)
+	cdPath := filepath.Join(gitDir, CommonDirName)
+	st, err := os.Stat(cdPath)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
 		return false, err
 	}
-	for _, dirEntry := range dirEntries {
-		if dirEntry.Name() == CommonDirName {
-			return true, nil
-		}
+	if st.IsDir() {
+		return false, fmt.Errorf("expected to be a file, not directory: %s", cdPath)
 	}
-	return false, nil
+	return true, nil
 }
 
 func FindGitDir(dir string) (string, error) {
