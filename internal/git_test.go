@@ -146,6 +146,26 @@ func TestFindGitDir(t *testing.T) {
 		assert.Equal(gitDirPath, result)
 	})
 	t.Run(".git is a file pointing to another directory", func(t *testing.T) {
-		t.Error("IMPLEMENT ME!")
+		assert := assert.New(t)
+		testDir, err := os.MkdirTemp("", "test")
+		assert.NoError(err, "failed to create temp dir")
+		defer os.RemoveAll(testDir)
+
+		actualGitDirPath := filepath.Join(testDir, "actual")
+		err = os.Mkdir(actualGitDirPath, 0750)
+		assert.NoError(err, "failed to create actual git dir")
+
+		wtPath := filepath.Join(testDir, "my_worktree")
+		err = os.Mkdir(wtPath, 0750)
+		assert.NoError(err, "failed to create worktree dir")
+
+		wtGitPath := filepath.Join(wtPath, GitDirName)
+		wtGitContents := GitDirPrefix + actualGitDirPath
+		err = os.WriteFile(wtGitPath, []byte(wtGitContents), 0666)
+		assert.NoError(err, "failed to write git dir file in worktree")
+
+		result, err := FindGitDir(wtPath)
+		assert.NoError(err, "failed to find git dir in worktree")
+		assert.Equal(actualGitDirPath, result)
 	})
 }
