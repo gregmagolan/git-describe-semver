@@ -181,3 +181,29 @@ func TestFindGitDir(t *testing.T) {
 		assert.Equal(actualDotGitPath, result)
 	})
 }
+
+func TestShouldEnableCommonDir(t *testing.T) {
+	t.Run(".git is a directory", func(t *testing.T) {
+		assert := assert.New(t)
+		testDir, gitDirPath := setUpDotGitDirTest(assert)
+		defer os.RemoveAll(testDir)
+
+		result, err := shouldEnableCommondDir(gitDirPath)
+		assert.NoError(err, "failed evaluating whether to enable commond dir")
+		assert.False(result)
+	})
+	t.Run(".git is a file pointing to another directory", func(t *testing.T) {
+		assert := assert.New(t)
+		testDir, actualDotGitPath, _ := setUpDotGitFileTest(assert)
+		defer os.RemoveAll(testDir)
+
+		cdPath := filepath.Join(actualDotGitPath, CommonDirName)
+		contents := "../my_worktree"
+		err := os.WriteFile(cdPath, []byte(contents), 0666)
+		assert.NoError(err, "failed writing commondir file")
+
+		result, err := shouldEnableCommondDir(actualDotGitPath)
+		assert.NoError(err, "failed evaluating whether to enable commond dir")
+		assert.True(result)
+	})
+}

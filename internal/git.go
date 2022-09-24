@@ -117,7 +117,11 @@ func GitDescribe(repo git.Repository) (*string, *int, *string, error) {
 }
 
 func OpenRepository(dir string) (*git.Repository, error) {
-	enableCommonDir, err := ShouldEnableCommondDir(dir)
+	gitDir, err := FindGitDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	enableCommonDir, err := shouldEnableCommondDir(gitDir)
 	if err != nil {
 		return nil, err
 	}
@@ -125,12 +129,7 @@ func OpenRepository(dir string) (*git.Repository, error) {
 	return git.PlainOpenWithOptions(dir, openOpts)
 }
 
-func ShouldEnableCommondDir(dir string) (bool, error) {
-	gitDir, err := FindGitDir(dir)
-	if err != nil {
-		return false, err
-	}
-
+func shouldEnableCommondDir(gitDir string) (bool, error) {
 	cdPath := filepath.Join(gitDir, CommonDirName)
 	st, err := os.Stat(cdPath)
 	if err != nil {
