@@ -2,6 +2,8 @@ package internal
 
 import (
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-git/go-git/v5"
@@ -126,4 +128,24 @@ func TestGitDescribeWithBranch(t *testing.T) {
 	test("v1.0.0", 2, commit4.String())
 	repo.CreateTag("v2.0.0", commit3, nil)
 	test("v2.0.0", 1, commit4.String())
+}
+
+func TestFindGitDir(t *testing.T) {
+	t.Run(".git is a directory", func(t *testing.T) {
+		assert := assert.New(t)
+		testDir, err := os.MkdirTemp("", "test")
+		assert.NoError(err, "failed to create temp dir")
+		defer os.RemoveAll(testDir)
+
+		gitDirPath := filepath.Join(testDir, GitDirName)
+		err = os.Mkdir(gitDirPath, 0750)
+		assert.NoError(err, "failed to create git dir")
+
+		result, err := FindGitDir(testDir)
+		assert.NoError(err, "failed to find git dir")
+		assert.Equal(gitDirPath, result)
+	})
+	t.Run(".git is a file pointing to another directory", func(t *testing.T) {
+		t.Error("IMPLEMENT ME!")
+	})
 }
