@@ -11,15 +11,6 @@ import (
 )
 
 func run(dir string, opts internal.GenerateVersionOptions) (*string, error) {
-	// enableCommonDir, err := git.ShouldEnableCommondDir(dir)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// openOpts := &git.PlainOpenOptions{EnableDotGitCommonDir: enableCommonDir}
-	// repo, err := git.PlainOpenWithOptions(dir, openOpts)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("unable to open git repository: %v", err)
-	// }
 	repo, err := internal.OpenRepository(dir)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open git repository: %v", err)
